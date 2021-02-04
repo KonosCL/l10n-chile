@@ -12,11 +12,10 @@ class StockPickingBatch(models.Model):
         """
         lines = {}
         for move in self.mapped('picking_ids.move_ids_without_package'):
-            if move.state != 'cancel':
-                key = (move.product_id, move.product_uom)
-                lines.setdefault(key, {'quantity': 0, 'price': 0, 'amount': 0})
-                line = lines[key]
-                line['quantity'] += (move.quantity_done or move.product_uom_qty)
+            key = (move.product_id, move.product_uom)
+            lines.setdefault(key, {'quantity': 0, 'price': 0, 'amount': 0})
+            line = lines[key]
+            line['quantity'] += (move.quantity_done or move.product_uom_qty)
         so_lines = self.mapped('picking_ids.sale_id.order_line')
         for key, line in lines.items():
             prices = [

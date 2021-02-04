@@ -14,9 +14,9 @@
 {% set warehouse = sale.warehouse_id[:1] %}
 {% set center_code = warehouse.xerox_code or o.partner_id.city_id.fsm_route_id.territory_id.warehouse_id.xerox_code or "00" %}
 {% set date = o.date_invoice %}
-{% set truck = o.mapped('fsm_order_ids.vehicle_id')[:1].name or digits_only(o.number[-10:-5])%}
+{% set truck = o.mapped('fsm_order_ids.vehicle_id')[:1].name or "00000" %}
 {% set dayroute = o.mapped('fsm_order_ids.dayroute_id')[:1] %}
-{% set shift = dayroute.name or digits_only(o.number[-5:]) %}
+{% set shift = dayroute.name or "00000" %}
 {% set warehouse_addr = warehouse.partner_id or o.company_id.partner_id %}
 </field>
 </record>
@@ -30,13 +30,13 @@
     <field name="save">False</field>
     <field name="template_name">
 {{ (path + '/') if prod else (path + 'Desa/') }}dte_cab_
-{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_ODO_{{ center_code[-5:].zfill(5) }}.txt
+{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_000_{{ center_code[-5:].zfill(5) }}.txt
     </field>
     <field name="template_text">
 {# 1 Cliente #}{{ (o.company_id.vat or '').replace('.', '')[:8] }};
 {# 2 Version #}1.0;
 {# 3 Tipo #}{{ o.class_id.code }};
-{# 4 Folio #}{{ digits_only(o.number)|int }};
+{# 4 Folio #}{{ digits_only(o.number) }};
 {# 5 FechEmis #}{{ o.date_invoice and o.date_invoice.strftime('%Y-%m-%d') }};
 {# 6 IndNoRebaja TODO Nota de credito fuera de plazo #};
 {# 7 TipoDespacho TODO o.transport_type #}{{2 if o.class_id.code in (33, 52) else ''}};
@@ -50,7 +50,7 @@
 {# 15 MedioPago #};
 {# 16 TermPagoCdg #};
 {# 17 TermPagoDias #};
-{# 18 FchVenc #}{{ o.date_due and o.date_due.strftime('%Y-%m-%d') }};
+{# 18 FchVenc #}{{ o.date_invoice and o.date_invoice.strftime('%Y-%m-%d') }};
 {# 19 RUTEmisor #}{{ (o.company_id.vat or '').replace('.', '') }};
 {# 20 RznSoc #}{{ esc(o.company_id.name) }};
 {# 21 GiroEmis #}{{ esc(o.company_id.partner_id.activity_description or '.') }};
@@ -76,9 +76,9 @@
 {# 41 RUTSolicita #};
 {# 42 Patente #};
 {# 43 RUTTrans TODO o.carrier_id.partner_id.vat #};
-{# 44 DirDest #}{{ esc(' '.join([o.partner_id.street or '', o.partner_id.street2 or ''])[:60]) }};
-{# 45 CmnaDest #}{{ esc(o.partner_id.city_id.name) or ''}};
-{# 46 CiudadDest #}{{ esc(o.partner_id.city or '') }};
+{# 44 DirDest #}{{ esc(' '.join([o.partner_shipping_id.street or '', o.partner_shipping_id.street2 or ''])[:60]) }};
+{# 45 CmnaDest #}{{ esc(o.partner_shipping_id.city_id.name) or ''}};
+{# 46 CiudadDest #}{{ esc(o.partner_shipping_id.city or '') }};
 {% set totals = namespace(amount_exempt=0) %}
 {% for line in o.invoice_line_ids %}
     {% if line.price_tax == 0 %}
@@ -201,7 +201,7 @@
     <field name="save">False</field>
     <field name="template_name">
 {{ (path + '/') if prod else (path + 'Desa/') }}dte_det_
-{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_ODO_{{ center_code[-5:].zfill(5) }}.txt</field>
+{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_000_{{ center_code[-5:].zfill(5) }}.txt</field>
     <field name="template_text">
 {% set totals = namespace(line_num=0) %}
 {% for line in o.invoice_line_ids %}
@@ -210,7 +210,7 @@
 {% set price_unit_with_tax = (line.price_total - discount_amount) / line.quantity %}
 {# 1 Cliente #}{{ (o.company_id.vat or '').replace('.', '')[:8] }};
 {# 2 Tipo #}{{ o.class_id.code }};
-{# 3 Folio #}{{ digits_only(o.number)|int }};
+{# 3 Folio #}{{ digits_only(o.number) }};
 {# 4 NroLinDet #}{{ totals.line_num }};
 {# 5 TpoCodigo #}INT1;
 {# 6 VlrCodigo #}{{ line.product_id.ref_etd[:8] }};
@@ -286,19 +286,19 @@
     <field name="save">False</field>
     <field name="template_name">
 {{ (path + '/') if prod else (path + 'Desa/') }}dte_ref_
-{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_ODO_{{ center_code[-5:].zfill(5) }}.txt</field>
+{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_000_{{ center_code[-5:].zfill(5) }}.txt</field>
     <field name="template_text">
 {% set totals = namespace(line_num=0) %}
 {% for ref in o.reference_ids[:30] %}
 {% set totals.line_num = totals.line_num + 1 %}
 {# 1 Cliente #}{{( o.company_id.vat or '').replace('.', '')[:8] }};
 {# 2 Tipo #}{{ o.class_id.code }};
-{# 3 Folio #}{{ digits_only(o.number)|int }};
+{# 3 Folio #}{{ digits_only(o.number) }};
 {# 2 NroLineaRef #}{{ totals.line_num }};
 {# 3 TpoDocRef #}{{ ref.class_id.prefix if ref.class_id.prefix == "HES" else ref.class_id.code }};
 {# 4 IndGlobal #};
-{# 5 FolioRef #}{{ref.name}};
-{# 6 RUTOtr #};
+{# 5 FolioRef #}{{ digits_only(ref.name) or '' }};
+{# 6 RUTOtr #}{{ ref.invoice_id.partner_id.vat or '' }};
 {# 8 FchRef #}{{ ref.date.strftime('%Y-%m-%d') }};
 {# 9 CodRef #}{{ ref.code or "" }};
 {# 10 RazonRef #}{{ esc(ref.motive or '') }};
@@ -317,7 +317,7 @@
     <field name="save">False</field>
     <field name="template_name">
 {{ (path + '/') if prod else (path + 'Desa/') }}dte_des_
-{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_ODO_{{ center_code[-5:].zfill(5) }}.txt</field>
+{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_000_{{ center_code[-5:].zfill(5) }}.txt</field>
     <field name="template_text">
 {% set totals = namespace(line_num=0) %}
 {% set lines = o.invoice_line_ids.filtered('discount') %}
@@ -325,7 +325,7 @@
 {% set totals.line_num = totals.line_num + 1 %}
 {# 1 Cliente #}{{(o.company_id.vat or '').replace('.', '')[:8]}};
 {# 2 Tipo #}{{o.class_id.code}};
-{# 3 Folio #}{{ digits_only(o.number)|int}};
+{# 3 Folio #}{{o.number}};
 {# 2 NroLineaDR #}{{ totals.line_num }};
 {# 5 TpoMov #};
 {# 6 GlosaDR #};
@@ -346,12 +346,12 @@
     <field name="save">False</field>
     <field name="template_name">
 {{ (path + '/') if prod else (path + 'Desa/') }}dte_ane_
-{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_ODO_{{ center_code[-5:].zfill(5) }}.txt</field>
+{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_000_{{ center_code[-5:].zfill(5) }}.txt</field>
     <field name="template_text">
 {% set payment = o.payment_ids[:1] %}
 {# 1 Cliente #}{{ (o.company_id.vat or '').replace('.', '')[:8] }};
 {# 2 Tipo #}{{ o.class_id.code }};
-{# 3 Folio #}{{ digits_only(o.number)|int}};
+{# 3 Folio #}{{ digits_only(o.number) }};
 {# 4 Número copias #}2;
 {# 5 Observaciones #}{{ payment and ("Pagado %s - %s" % (payment.journal_id.name, payment.communication)) or "" }};
 {# 6 Fecha Cancelación #};
@@ -371,7 +371,7 @@
 {# 20 IABA #};
 {# 21 Hora emisión #}{{o.create_date.strftime('%H:%M')}};
 {# 22 Afecto IVA #}{{ o.amount_base_tax|int }};
-{# 23 Número de pedido #}{{ digits_only(o.origin[:7]) }}
+{# 23 Número de pedido #}{{ digits_only(o.origin) }}
 {{ '\n' }}
     </field>
 </record>
@@ -385,14 +385,14 @@
     <field name="save">False</field>
     <field name="template_name">
 {{ (path + '/') if prod else (path + 'Desa/') }}dte_an2_
-{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_ODO_{{ center_code[-5:].zfill(5) }}.txt</field>
+{{ company_code }}_{{ tipo }}_{{now.strftime('%Y%m%d_%H%M%S')}}_{{ truck[-5:].zfill(5) }}_{{ shift[-5:].zfill(5) }}_000_{{ center_code[-5:].zfill(5) }}.txt</field>
     <field name="template_text">
 {% set totals = namespace(line_num=0) %}
 {% for line in o.invoice_line_ids %}
 {% set totals.line_num = totals.line_num + 1 %}
 {# 1 Cliente #}{{(o.company_id.vat or '').replace('.', '')[:8]}};
 {# 2 Tipo #}{{o.class_id.code}};
-{# 3 Folio #}{{ digits_only(o.number)|int}};
+{# 3 Folio #}{{ digits_only(o.number) }};
 {# 4 Numero Detalle #}{{ totals.line_num }};
 {# 5 TpoCodigo #}INT1;
 {# 6 Código del item 01 #}{{ line.product_id.ref_etd[:8] }};
