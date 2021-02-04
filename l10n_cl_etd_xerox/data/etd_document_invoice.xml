@@ -7,7 +7,7 @@
     <field name="template_text_include">
 {% set path = o.company_id.backend_acp_id.xerox_company_code + o.company_id.backend_acp_id.xerox_company_short_name %}
 {% set prod = o.company_id.backend_acp_id.prod_environment %}
-{% set tipo = ("000%d" % o.class_id.code)[-3:] %}
+{% set tipo = ("000%d" % o.class_id.code)[-3:] %} LINEA
 {% set company_code = o.company_id.backend_acp_id.xerox_company_code or "00" %}
 {% set origin = o.env['account.invoice'].search([('number', '=', o.origin)]) %}
 {% set sale = o.env['sale.order'].search([('name', '=', o.origin)]) or o.env['sale.order'].search([('name', '=', origin.origin)]) %}
