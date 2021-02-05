@@ -18,4 +18,15 @@
         </field>
     </record>
 
+    <record id="view_stock_picking_guia_class" model="ir.ui.view">
+        <field name="name">stock.picking.guia.document.class</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="move_reason" />
+            </field>
+        </field>
+    </record>
+
 </odoo>
